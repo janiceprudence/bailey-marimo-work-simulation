@@ -46,6 +46,20 @@
   
     .poster-gallery{position:absolute;z-index:2;left:3%;right:3%;top:23px;display:flex;align-items:stretch;justify-content:space-between;gap:10px}.bailey-poster{position:relative;top:auto;left:auto;right:auto;flex:1 1 0;min-width:0;max-width:200px;height:157px;gap:5px;padding:11px 9px 7px;border:1px solid #dedbd3;border-radius:3px;background:linear-gradient(160deg,#fff,#fdfcf9);box-shadow:0 2px 0 #d2cec7,2px 7px 15px #39332b32;color:#232323;text-align:left;transform:none}.poster-topcopy{min-height:31px;max-height:31px;overflow:hidden;font-size:9px;line-height:1.1;font-weight:600;color:#202020}.poster-bottomcopy{font-size:9px;line-height:1.05;font-weight:1000;color:#222}.poster-art{height:auto;flex:1;min-height:0}.poster-art img{object-fit:cover}.string-lights{position:absolute;z-index:1;left:0;right:0;top:132px;height:62px;transform:none;border:0;background:transparent;pointer-events:none;overflow:visible}.string-lights svg{display:block;width:100%;height:100%;overflow:visible}.vine-wire{fill:none;stroke:#687543;stroke-width:3;stroke-linecap:round;opacity:.9}.vine-leaves path{fill:#7f9850;stroke:#566a39;stroke-width:1;opacity:.95}.fairy-glow{fill:#ffe89a;filter:blur(4px);opacity:0;transition:opacity .35s}.fairy-bulb{fill:#a39564;stroke:#786a42;stroke-width:1;opacity:.8;transition:fill .3s,filter .3s}.desk-scene.focus-active .fairy-glow{opacity:.82;animation:leaf-glow 2.1s ease-in-out infinite alternate}.desk-scene.focus-active .fairy-bulb{fill:#fff3b4;stroke:#e8c45e;filter:drop-shadow(0 0 4px #ffe48e)}@keyframes leaf-glow{from{opacity:.55}to{opacity:.95}}@media(prefers-reduced-motion:reduce){.desk-scene.focus-active .fairy-glow{animation:none;opacity:.8}}
     @media(max-width:760px){.poster-gallery{left:4%;right:4%;top:23px;justify-content:flex-start;gap:8px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#cfb7a8 transparent;padding:0 2px 8px}.bailey-poster{flex:0 0 43%;max-width:176px;height:153px;padding:10px 7px 7px;gap:4px}.poster-topcopy{min-height:30px;max-height:30px;font-size:8px;line-height:1.08}.poster-bottomcopy{font-size:8px}.string-lights{top:135px;height:56px}}
+
+    .photo-dialog{width:min(92vw,560px);max-height:90vh;overflow:auto;padding:16px;border:2px solid #f1c4d0;border-radius:18px;background:#fffdfb;color:#76536a}
+    .photo-dialog::backdrop{background:#49384577}
+    .photo-preview{display:block;max-width:100%;max-height:65vh;margin:0 auto 12px}
+    .photo-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .photo-actions>*{font:inherit;color:inherit;padding:8px}
+    .marimo-space{touch-action:auto}
+    @media(max-width:760px){
+      .topbar{height:auto;min-height:54px;gap:8px}
+      .save-pill,.mail-peek-trigger{min-height:40px}
+      .plant-lamp-row{gap:0}
+      .jar-zone,.lamp-wrap{min-width:0;flex-shrink:1}
+    }
+
   </style>
 </head>
 <body>
@@ -113,12 +127,50 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="snack-backdrop" id="snackModal" hidden role="dialog" aria-modal="true" aria-labelledby="snackTitle"><div class="snack-modal-card"><button class="snack-close" id="closeSnack" type="button" aria-label="Close snack message">×</button><div class="snack-zoom" id="snackZoom" aria-hidden="true"></div><h2 id="snackTitle"></h2><p id="snackMessage"></p><div class="snack-signoff">a note from your fav snacks ♡</div></div></div>
+  <dialog id="deskPhotoDialog" class="photo-dialog" aria-label="Desk photo">
+    <img id="deskPhotoPreview" class="photo-preview" alt="Snapshot of your virtual desk">
+    <div class="photo-actions">
+      <a id="deskPhotoDownload" download>Download PNG</a>
+      <form method="dialog"><button type="submit">Close</button></form>
+    </div>
+  </dialog>
+  <script src="vendor/html2canvas.min.js"></script>
+
   <script>
     (()=>{
       const appView=document.getElementById('appView'),taskbar=[...document.querySelectorAll('.taskbar button[data-app]')],toast=document.getElementById('toast');let toastTimer=null,currentApp='home',selectedSlide=0,focusSeconds=1500,focusTick=null;
       const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
       function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2300)}
-      const saveScreenshot=document.getElementById('saveScreenshot'),deskScene=document.querySelector('.desk-scene');saveScreenshot.addEventListener('click',async()=>{const label=saveScreenshot.textContent;saveScreenshot.disabled=true;saveScreenshot.textContent='Making your desk photo…';try{const clone=deskScene.cloneNode(true);clone.querySelectorAll('.marimo').forEach(el=>el.classList.remove('dragging','turning'));clone.querySelectorAll('.bubble.pop').forEach(el=>el.remove());const width=Math.ceil(deskScene.getBoundingClientRect().width),height=Math.ceil(deskScene.getBoundingClientRect().height),css=document.querySelector('style').textContent,markup='<div xmlns="http://www.w3.org/1999/xhtml"><style>'+css+'</style><div style="width:'+width+'px;height:'+height+'px;overflow:hidden">'+clone.outerHTML+'</div></div>',svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+(width*2)+'" height="'+(height*2)+'" viewBox="0 0 '+width+' '+height+'"><foreignObject width="100%" height="100%">'+markup+'</foreignObject></svg>',blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),img=new Image();await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('Could not render screenshot'));img.src=url});const canvas=document.createElement('canvas');canvas.width=width*2;canvas.height=height*2;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!png)throw new Error('PNG export failed');const downloadUrl=URL.createObjectURL(png),a=document.createElement('a');a.href=downloadUrl;a.download='marimo-desk-'+new Date().toISOString().slice(0,10)+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(downloadUrl),1200);showToast('Desk photo downloaded to this device 📸')}catch(error){console.error(error);showToast('Could not save the screenshot in this browser. Try another browser.')}finally{saveScreenshot.disabled=false;saveScreenshot.textContent=label}});
+      const saveScreenshot = document.getElementById('saveScreenshot');
+      const deskScene = document.querySelector('.desk-scene');
+      const photoDialog = document.getElementById('deskPhotoDialog');
+      const photoPreview = document.getElementById('deskPhotoPreview');
+      const photoDownload = document.getElementById('deskPhotoDownload');
+      let photoUrl;
+      photoDialog.addEventListener('close', () => saveScreenshot.focus());
+      saveScreenshot.addEventListener('click', async () => {
+        const label = saveScreenshot.textContent;
+        saveScreenshot.disabled = true;
+        saveScreenshot.textContent = 'Making your desk photo...';
+        try {
+          const canvas = await html2canvas(deskScene, { backgroundColor: null, scale: 2, logging: false });
+          const png = await new Promise((resolve, reject) => {
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('PNG export failed')), 'image/png');
+          });
+          if (photoUrl) URL.revokeObjectURL(photoUrl);
+          photoUrl = URL.createObjectURL(png);
+          photoPreview.src = photoUrl;
+          photoDownload.href = photoUrl;
+          photoDownload.download = 'marimo-desk-' + new Date().toISOString().slice(0, 10) + '.png';
+          photoDialog.showModal();
+        } catch (error) {
+          console.error(error);
+          showToast('Could not create a desk photo. You can still take a screenshot with your device.');
+        } finally {
+          saveScreenshot.disabled = false;
+          saveScreenshot.textContent = label;
+        }
+      });
       const snackModal=document.getElementById('snackModal'),snackZoom=document.getElementById('snackZoom'),snackTitle=document.getElementById('snackTitle'),snackMessage=document.getElementById('snackMessage');const snackNotes={apple:{art:'🍎',sticker:'SNACK TIME!',title:'Snack time!',message:'A crisp little pause is approved by the desk committee. Take a bite, stretch your shoulders, and let that pile wait a minute.'},cookie:{art:'🥠',sticker:'PAUSE WORK',title:'A tiny fortune',message:'Let’s pause work. Your next bright idea might show up after a breath, a stretch, and one very good cookie.'}};function openSnack(type){const note=snackNotes[type];snackZoom.innerHTML=note.art+'<span class="zoom-sticker">'+note.sticker+'</span>';snackTitle.textContent=note.title;snackMessage.textContent=note.message;snackModal.classList.toggle('cookie-modal',type==='cookie');snackModal.hidden=false;document.getElementById('closeSnack').focus()}function closeSnack(){snackModal.hidden=true;document.getElementById('appleSnack').focus()}document.getElementById('appleSnack').addEventListener('click',()=>openSnack('apple'));document.getElementById('cookieSnack').addEventListener('click',()=>openSnack('cookie'));document.getElementById('closeSnack').addEventListener('click',closeSnack);snackModal.addEventListener('click',e=>{if(e.target===snackModal)closeSnack()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!snackModal.hidden)closeSnack()});
       const slideData=[{eyebrow:'A SMALL DECK FOR TODAY',title:'Make room for a softer day',body:'A few gentle reminders for doing good work without rushing yourself.',emoji:'☁️'},{eyebrow:'ONE THING AT A TIME',title:'Tiny steps still count',body:'Pick one useful thing. Give it your kind attention. Then pause.',emoji:'🌷'},{eyebrow:'MOSS CARE NOTE',title:'Turn your marimo',body:'Give the little moss balls a quarter turn now and then so every side gets light.',emoji:'🫧'}];
       function renderHome(){appView.innerHTML='<div class="app-home"><div class="home-big"><div class="screen-eyebrow">HELLO, LITTLE DESK</div><h2>Welcome back ♡</h2><p>Your marimo are floating quietly. The lamp is ready when you need a warm glow. Choose a tiny task below.</p></div><div class="home-side"><div class="stat-card"><b>🌱 moss check-in</b>Turn your marimo for even light</div><div class="stat-card"><b>☁️ one gentle goal</b>Finish a small thing, then rest</div></div><div class="home-shortcuts"><button data-open="slides">🎀 Open cute slides</button><button data-open="docs">📝 Write a note</button><button data-open="mail">✉️ Tidy inbox</button></div></div>';appView.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openApp(b.dataset.open)))}
@@ -148,7 +200,7 @@
       const lamp=document.getElementById('lamp'),pullCord=document.getElementById('pullCord');function toggleLamp(){const on=lamp.classList.toggle('is-on');pullCord.setAttribute('aria-label',on?'Pull the lamp cord to turn the lamp off':'Pull the lamp cord to turn the lamp on');document.getElementById('careStatus').textContent=on?'Warm light on · your moss is getting a glow.':'Lamp off · the desk is in soft shade.';showToast(on?'A warm little glow ✨':'Lamp switched off 🌙')}pullCord.addEventListener('click',toggleLamp);pullCord.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();toggleLamp()}});
       const space=document.getElementById('marimoSpace'),moss=[...space.querySelectorAll('.marimo')],careStatus=document.getElementById('careStatus');let dragging=null,lastPointer=null;
       function bounds(){return {w:space.clientWidth,h:space.clientHeight}}
-      moss.forEach((ball,index)=>{const rect=ball.getBoundingClientRect(),box=space.getBoundingClientRect(),item={el:ball,x:parseFloat(ball.style.left)||20,y:parseFloat(ball.style.top)||35,vx:(index%2?-.17:.14),vy:(index%2?.13:-.15),r:rect.width};ball._float=item;ball.addEventListener('pointerdown',e=>{dragging=item;lastPointer={x:e.clientX,y:e.clientY};ball.classList.add('dragging');ball.setPointerCapture(e.pointerId);e.preventDefault()});ball.addEventListener('pointermove',e=>{if(dragging!==item)return;const b=bounds(),rect=space.getBoundingClientRect();item.x=Math.max(0,Math.min(b.w-item.r,e.clientX-rect.left-item.r/2));item.y=Math.max(0,Math.min(b.h-item.r,e.clientY-rect.top-item.r/2));item.vx=(e.clientX-lastPointer.x)*.08;item.vy=(e.clientY-lastPointer.y)*.08;lastPointer={x:e.clientX,y:e.clientY};ball.style.left=item.x+'px';ball.style.top=item.y+'px'});const end=()=>{if(dragging===item){dragging=null;ball.classList.remove('dragging');careStatus.textContent='A little mossy drift—nice and gentle.'}};ball.addEventListener('pointerup',end);ball.addEventListener('pointercancel',end)});
+      moss.forEach((ball,index)=>{const item={el:ball,x:parseFloat(ball.style.left)||20,y:parseFloat(ball.style.top)||35,vx:(index%2?-.17:.14),vy:(index%2?.13:-.15),r:ball.offsetWidth};ball._float=item;ball.addEventListener('pointerdown',e=>{dragging=item;lastPointer={x:e.clientX,y:e.clientY};ball.classList.add('dragging');ball.setPointerCapture(e.pointerId);e.preventDefault()});ball.addEventListener('pointermove',e=>{if(dragging!==item)return;const b=bounds(),rect=space.getBoundingClientRect();item.x=Math.max(0,Math.min(b.w-item.r,(e.clientX-rect.left)*b.w/rect.width-item.r/2));item.y=Math.max(0,Math.min(b.h-item.r,(e.clientY-rect.top)*b.h/rect.height-item.r/2));item.vx=(e.clientX-lastPointer.x)*.08;item.vy=(e.clientY-lastPointer.y)*.08;lastPointer={x:e.clientX,y:e.clientY};ball.style.left=item.x+'px';ball.style.top=item.y+'px'});const end=()=>{if(dragging===item){dragging=null;ball.classList.remove('dragging');careStatus.textContent='A little mossy drift—nice and gentle.'}};ball.addEventListener('pointerup',end);ball.addEventListener('pointercancel',end)});
       function floatMoss(){const b=bounds();moss.forEach(ball=>{const item=ball._float;if(!item||dragging===item)return;item.x+=item.vx;item.y+=item.vy;if(item.x<0||item.x>b.w-item.r){item.vx*=-1;item.x=Math.max(0,Math.min(b.w-item.r,item.x))}if(item.y<9||item.y>b.h-item.r-12){item.vy*=-1;item.y=Math.max(9,Math.min(b.h-item.r-12,item.y))}item.vx=Math.max(-.55,Math.min(.55,item.vx+(Math.random()-.5)*.025));item.vy=Math.max(-.5,Math.min(.5,item.vy+(Math.random()-.5)*.025));ball.style.left=item.x+'px';ball.style.top=item.y+'px'});requestAnimationFrame(floatMoss)}requestAnimationFrame(floatMoss);
       let popped=0;function spawnBubble(){const bubble=document.createElement('button');bubble.className='bubble';bubble.type='button';bubble.setAttribute('aria-label','Pop a water bubble');bubble.style.left=(8+Math.random()*82)+'%';bubble.style.bottom=(5+Math.random()*18)+'%';bubble.style.animationDelay=(Math.random()*.7)+'s';bubble.addEventListener('click',()=>{bubble.classList.add('pop');bubble.disabled=true;popped++;careStatus.textContent='Pop! '+popped+' bubble'+(popped===1?'':'s')+' caught ✨';setTimeout(()=>bubble.remove(),220);setTimeout(()=>{if(document.visibilityState==='visible')spawnBubble()},1800)});document.getElementById('bubblesLayer').appendChild(bubble);setTimeout(()=>{if(bubble.isConnected){bubble.remove();if(document.visibilityState==='visible'&&document.querySelectorAll('.bubble').length<3)spawnBubble()}},5200)}for(let i=0;i<5;i++)setTimeout(spawnBubble,i*350);document.getElementById('makeBubbles').addEventListener('click',()=>{for(let i=0;i<4;i++)setTimeout(spawnBubble,i*180);careStatus.textContent='A few fresh bubbles are on their way 🫧'});
       document.getElementById('rotateMoss').addEventListener('click',()=>{moss.forEach((ball,i)=>{ball.classList.remove('turning');void ball.offsetWidth;ball.classList.add('turning');setTimeout(()=>ball.classList.remove('turning'),850);const item=ball._float;item.vx+=(i%2?.25:-.25);item.vy+=(i%2?-.12:.12)});careStatus.textContent='Turned a quarter turn · every side gets a little light ☀️';showToast('Moss turned for even light 🌱')});

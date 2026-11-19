@@ -15,14 +15,14 @@ The note editor and demo inbox save changes in the browser using `localStorage`.
 
 - **HTML** structures the desk and laptop apps in `index.html`.
 - **CSS** styles and animates the scene and its controls.
-- **Vanilla JavaScript** handles the timer, drag interactions, app state, and PNG export using the Canvas API.
+- **Vanilla JavaScript** handles the timer, drag interactions, app state, and PNG export using html2canvas and the Canvas API.
 - **`assets/`** contains the Strong Bailey poster illustrations.
 
 The site runs entirely in the browser and requires no build step or backend.
 
 ## Run locally
 
-Open `index.html` in a browser, or start a local server from the project folder:
+Start a local server from the project folder so the photo export can load the poster images:
 
 ```sh
 python -m http.server 8000
