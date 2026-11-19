@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#fff4eb" />
   <meta name="description" content="A gentle little desk simulator: play with marimo, pull the lamp cord, and do cozy pretend-work." />
-  <title>Marimo Desk Club · a little corner of calm</title>
+  <title>Bailey’s Marimo Club · your own cozy little corner</title>
   <style>
     :root{--paper:#fff9f1;--pink:#f3a7bc;--pink-deep:#d97998;--pink-pale:#ffe2e9;--berry:#a94b6d;--moss:#397b5d;--moss-dark:#255540;--sage:#d9ebd9;--butter:#ffe8a7;--ink:#4d4650;--muted:#8a7e86;--line:#eadbd4;--screen:#f8f5ed;--shadow:0 16px 35px #855b4a1e}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;color:var(--ink);font-family:"Trebuchet MS","Arial Rounded MT Bold",system-ui,sans-serif;background:radial-gradient(#edb9c9 1.4px,transparent 1.5px) 0 0/30px 30px,linear-gradient(180deg,#fff9f5 0%,#fff2f4 100%)}button,input,textarea{font:inherit}button{color:inherit}button:focus-visible,input:focus-visible,textarea:focus-visible,[contenteditable]:focus-visible{outline:3px solid #db91ae;outline-offset:3px}
@@ -45,7 +45,22 @@
     @media(max-width:760px){.bailey-poster{top:25px;width:44%;max-width:174px;height:154px;padding:10px 7px 7px;gap:4px}.poster-after{left:5%}.poster-during{right:5%;left:auto}.poster-topcopy{min-height:25px;font-size:8px;line-height:1.08}.poster-bottomcopy{font-size:8px}.poster-art img{object-position:center 43%}}
   
     .poster-gallery{position:absolute;z-index:2;left:3%;right:3%;top:23px;display:flex;align-items:stretch;justify-content:space-between;gap:10px}.bailey-poster{position:relative;top:auto;left:auto;right:auto;flex:1 1 0;min-width:0;max-width:200px;height:157px;gap:5px;padding:11px 9px 7px;border:1px solid #dedbd3;border-radius:3px;background:linear-gradient(160deg,#fff,#fdfcf9);box-shadow:0 2px 0 #d2cec7,2px 7px 15px #39332b32;color:#232323;text-align:left;transform:none}.poster-topcopy{min-height:31px;max-height:31px;overflow:hidden;font-size:9px;line-height:1.1;font-weight:600;color:#202020}.poster-bottomcopy{font-size:9px;line-height:1.05;font-weight:1000;color:#222}.poster-art{height:auto;flex:1;min-height:0}.poster-art img{object-fit:cover}.string-lights{position:absolute;z-index:1;left:0;right:0;top:132px;height:62px;transform:none;border:0;background:transparent;pointer-events:none;overflow:visible}.string-lights svg{display:block;width:100%;height:100%;overflow:visible}.vine-wire{fill:none;stroke:#687543;stroke-width:3;stroke-linecap:round;opacity:.9}.vine-leaves path{fill:#7f9850;stroke:#566a39;stroke-width:1;opacity:.95}.fairy-glow{fill:#ffe89a;filter:blur(4px);opacity:0;transition:opacity .35s}.fairy-bulb{fill:#a39564;stroke:#786a42;stroke-width:1;opacity:.8;transition:fill .3s,filter .3s}.desk-scene.focus-active .fairy-glow{opacity:.82;animation:leaf-glow 2.1s ease-in-out infinite alternate}.desk-scene.focus-active .fairy-bulb{fill:#fff3b4;stroke:#e8c45e;filter:drop-shadow(0 0 4px #ffe48e)}@keyframes leaf-glow{from{opacity:.55}to{opacity:.95}}@media(prefers-reduced-motion:reduce){.desk-scene.focus-active .fairy-glow{animation:none;opacity:.8}}
-    @media(max-width:760px){.poster-gallery{left:4%;right:4%;top:23px;justify-content:flex-start;gap:8px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#cfb7a8 transparent;padding:0 2px 8px}.bailey-poster{flex:0 0 43%;max-width:176px;height:153px;padding:10px 7px 7px;gap:4px}.poster-topcopy{min-height:30px;max-height:30px;font-size:8px;line-height:1.08}.poster-bottomcopy{font-size:8px}.string-lights{top:135px;height:56px}}
+    .poster-swipe-hint{display:none}
+    @media(max-width:760px){
+      .desktop-layout{padding-top:196px;pointer-events:none}
+      .desktop-layout>section{pointer-events:auto}
+      .poster-gallery{
+        left:4%;right:4%;top:23px;justify-content:flex-start;gap:8px;
+        overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+        scroll-padding-inline:4px;scrollbar-width:thin;scrollbar-color:#cfb7a8 transparent;
+        padding:6px 4px 8px;
+      }
+      .bailey-poster{flex:0 0 46%;max-width:176px;height:153px;padding:10px 7px 7px;gap:4px;scroll-snap-align:start}
+      .poster-topcopy{min-height:30px;max-height:none;font-size:8px;line-height:1.08}
+      .poster-bottomcopy{font-size:8px}
+      .poster-swipe-hint{display:inline;margin-left:8px}
+      .string-lights{top:135px;height:56px}
+    }
 
     .marimo-space{touch-action:auto}
     @media(max-width:760px){
@@ -83,7 +98,7 @@
       <div class="focus-card" aria-label="Focus timer"><span class="focus-time" id="focusTime">25:00</span><button class="small-btn" id="focusToggle">Start focus</button><button class="small-btn" id="focusReset" aria-label="Reset focus timer">↺</button></div>
     </section>
     <main class="desk-scene" id="deskScene">
-      <div class="wall" aria-hidden="true">
+      <div class="wall">
         <div class="wall-shelf"><div class="shelf-pot"></div></div><div class="poster-gallery" role="group" aria-label="Strong Bailey office meme posters" tabindex="0">
           <article class="bailey-poster"><p class="poster-topcopy">When your boss gives you new work 20 minutes before clock-out</p><div class="poster-art"><img src="assets/bailey-work-scroll.png" alt="Strong Bailey scrolling her phone beside a tall stack of work"></div><p class="poster-bottomcopy">ME AT WORK: “JUST ONE SEC.”</p></article>
           <article class="bailey-poster"><p class="poster-topcopy">“Are you free after work?”</p><div class="poster-art"><img src="assets/bailey-work-fish.png" alt="Strong Bailey laughing with coworkers beside a goldfish bowl"></div><p class="poster-bottomcopy">“I’M FREE DURING WORK.”</p></article>
@@ -93,7 +108,7 @@
         <div class="string-lights" aria-hidden="true"><svg viewBox="0 0 1200 110" preserveAspectRatio="none" focusable="false"><path class="vine-wire" d="M0 31 C140 42 175 82 300 75 S480 14 600 26 S760 88 900 76 S1080 22 1200 38"/>
           <g class="vine-leaves"><path d="M85 38 C74 34 70 24 77 18 C87 23 91 31 85 38Z"/><path d="M85 38 C93 29 104 29 108 36 C101 43 91 44 85 38Z"/><path d="M180 60 C168 57 164 47 170 40 C180 44 186 53 180 60Z"/><path d="M180 60 C190 53 200 55 202 63 C193 69 184 67 180 60Z"/><path d="M265 74 C254 72 249 63 254 55 C264 59 270 67 265 74Z"/><path d="M355 58 C345 50 344 41 351 36 C360 43 362 51 355 58Z"/><path d="M355 58 C365 52 375 55 376 63 C368 68 359 66 355 58Z"/><path d="M455 30 C444 25 442 15 449 9 C458 16 462 24 455 30Z"/><path d="M555 22 C546 14 548 5 556 1 C563 9 563 17 555 22Z"/><path d="M650 39 C639 36 636 27 642 20 C652 25 656 33 650 39Z"/><path d="M650 39 C661 32 670 35 671 43 C663 49 654 47 650 39Z"/><path d="M755 83 C744 79 741 69 748 63 C757 69 761 77 755 83Z"/><path d="M860 79 C851 70 853 61 861 57 C868 65 868 73 860 79Z"/><path d="M960 59 C949 55 946 45 953 39 C963 45 967 53 960 59Z"/><path d="M1065 27 C1054 22 1052 12 1059 6 C1068 13 1072 21 1065 27Z"/><path d="M1140 31 C1130 24 1132 15 1140 11 C1148 19 1147 26 1140 31Z"/></g>
           <g class="fairy-bulbs"><circle class="fairy-glow" cx="120" cy="43" r="12"/><circle class="fairy-bulb" cx="120" cy="43" r="3.2"/><circle class="fairy-glow" cx="235" cy="76" r="12"/><circle class="fairy-bulb" cx="235" cy="76" r="3.2"/><circle class="fairy-glow" cx="360" cy="62" r="12"/><circle class="fairy-bulb" cx="360" cy="62" r="3.2"/><circle class="fairy-glow" cx="480" cy="26" r="12"/><circle class="fairy-bulb" cx="480" cy="26" r="3.2"/><circle class="fairy-glow" cx="600" cy="26" r="12"/><circle class="fairy-bulb" cx="600" cy="26" r="3.2"/><circle class="fairy-glow" cx="725" cy="77" r="12"/><circle class="fairy-bulb" cx="725" cy="77" r="3.2"/><circle class="fairy-glow" cx="855" cy="79" r="12"/><circle class="fairy-bulb" cx="855" cy="79" r="3.2"/><circle class="fairy-glow" cx="990" cy="51" r="12"/><circle class="fairy-bulb" cx="990" cy="51" r="3.2"/><circle class="fairy-glow" cx="1120" cy="31" r="12"/><circle class="fairy-bulb" cx="1120" cy="31" r="3.2"/></g></svg></div>
-        <div class="wall-caption">♡ STRONG BAILEY 9-6 CLUB ♡</div>
+        <div class="wall-caption">♡ STRONG BAILEY 9-6 CLUB ♡<span class="poster-swipe-hint"> &larr; Swipe posters &rarr;</span></div>
       </div>
       <div class="wood-edge" aria-hidden="true"><div class="wood-grain"></div></div>
       <div class="desktop-layout">
